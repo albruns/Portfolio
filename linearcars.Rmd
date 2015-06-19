@@ -1,0 +1,114 @@
+
+---
+
+title: "Linear Regression on mtcars"
+author: "Alexander Bruns"
+date: "Friday, June 12, 2015"
+output:
+  html_document: default
+
+---
+
+### Summary
+
+This study reviews the effect of 10 parameters on the gas mileage of 32 cars. The impact of each factor was investigated and modeled. 
+It was found that the transmission type has no significant effect on the gas mileage. There are gasoline saving autmomatic automobiles availible as well as gasoline saving manual automobile.
+However, these findings only apply to this dataset, because it consists of very fewe observations and besides some exotic cars high hp cars are included; thus they do not represent the average car market.
+
+
+### Effect of transmission type on mpg based on the *mtcars* dataset
+
+The present study aims to investigate the possible effect of the transmission type in 32 cars represented in the *mtcars* dataset among other variables.
+
+This report is divided into three parts: Exploratory data analysis, Model selection and Model validation.
+
+#### Exploratory Data Analysis
+
+The exploratory data analysis (Appendix A) showed a strong correlation between mpg and weight, displacement and cylinders (R > 0.8). Displacement and cylinders are confounded as usually the displacement increases with cylinder number. Both are correlated with R > 0.9. The correlation between *mpg* and transmission type is about 0.6 which indicates that mpg depends on various factors.
+
+Graph 1 reveals the relation between Weight, Transmission type and Miles per Gallon.  
+<center>
+```{r echo=FALSE, message=FALSE,warning=FALSE,error=FALSE}
+library(ggvis)
+mtcars%>%ggvis(x=~wt,y=~mpg)%>%layer_points(fill=~as.factor(am))%>%add_axis("x",title="Weight [wt]")%>%add_axis("y",title="Miles per Gallon [mpg]")%>%set_options(width = 300, height = 300, keep_aspect = TRUE)
+```
+</center>
+#### Model Selection
+This section describes the selection of the best model for the question to how extent affects the transmission type the *mpg*. As shown in the previous section, only the variables with the highest correlation coefficient were taken into account. The selection of the best model is done by means of a likelihood-ratio-test.
+
+```{r echo=FALSE, message=FALSE,warning=FALSE,error=FALSE}
+fit_all<-lm(mpg~.,data=mtcars)
+fit_select<-lm(mpg~wt+am+cyl,data=mtcars)
+fit_interact<-lm(mpg~wt+am+cyl+wt*cyl,data=mtcars)
+anova(fit_all,fit_select,fit_interact)
+```
+The result of the ANOVA table shows that the addition of an interaction term increases the accuray. Therefore the linear model *fit_interact* will be used the calculate prediction and confidence intervals.
+
+#### Model Evaluation
+The following table shows the summary of the linear model. As it can be seen, the transmission type has no significant effect on mpg. Weight [wt] and cylinders [cyl] are significant regressors. 
+In fact, the gas mileage _does not_ depent on the transmission type.
+```{r echo=F, message=FALSE,warning=FALSE,error=FALSE}
+summary(fit_interact)
+```
+
+Residuals (see __Annex C__) are in a good approximation normally distributed. No autocorrelation nor heteroskedasticity could be observed.
+However, two car models - the Toyota Corolla and the Fiat 128 - show greater residuals tha expectetd. This might be due to the fact that these small cars were engineered to save gasoline, opposite to the majority of the investigated population.
+
+
+\newpage 
+
+#### APPENDIX A - Getting and Cleaning the *"mtcars"* Data
+
+__Requiered packages:__
+```{r echo=T, message=FALSE,warning=FALSE,error=FALSE}
+library(dplyr)
+library(lattice)
+library(datasets)
+library(psych)
+```
+
+#### Getting and cleaning the data
+
+```{r echo=T, message=FALSE,warning=FALSE,error=FALSE}
+data(mtcars)
+```
+
+\newpage 
+
+#### APPENDIX B - Exploratory Data Analysis
+
+#### Inspection for relationship between dependent and independent variables
+
+The dependent variable is *mpg* while the independent variables are weight *wt*, transmission type *am*, cylinder displacement *disp* and horsepower *hp*. 
+
+Firstly, the correlations between all variables are investigated.
+```{r echo=T, message=FALSE,warning=FALSE,error=FALSE}
+corr.test(mtcars)$r[,1]
+```
+
+Then, all variables with a correlation with *mpg* higher than 0.6 are visualized in the following plot in order to examine the type of the correlation.
+```{r echo=F, message=FALSE,warning=FALSE,error=FALSE,fig.width=8, fig.height=8}
+splom(mtcars[c(1,3,4,6,9)],main="Relation between variables of the dataset")
+```
+
+\newpage
+
+#### APPENDIX C - Residuals
+
+The residuals for the model were examined. The following four methods were utilized in order to determine the goodness of fit.
+
+* Residuals vs Fitted
+
+* QQ-Plot to examine normal distribution of residuals
+
+* Standarized residuals
+
+* Residuals vs Leverage
+
+```{r echo=F, message=FALSE,warning=FALSE,error=FALSE,fig.width=8, fig.height=8}
+par(mfrow=c(2,2))
+plot(fit_interact,pch=16,col='blue')
+```
+
+Residuals are in a good approximation normally distributed. No autocorrelation nor heteroskedasticity could be observed.
+However, two car models - the Toyota Corolla and the Fiat 128 - show greater residuals tha expectetd. This might be due to the fact that these small cars were engineered to save gasoline, opposite to the majority of the investigated population.
