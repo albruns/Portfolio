@@ -13,7 +13,7 @@ output:
 
 This study reviews the effect of 10 parameters on the gas mileage of 32 cars. The impact of each factor was investigated and modeled. 
 It was found that the transmission type has no significant effect on the gas mileage. There are gasoline saving autmomatic automobiles availible as well as gasoline saving manual automobile.
-However, these findings only apply to this dataset, because it consists of very fewe observations and besides some exotic cars high hp cars are included; thus they do not represent the average car market.
+However, these findings only apply to this dataset, because it consists of very few observations and besides some exotic cars high hp cars are included; thus they do not represent the average car market.
 
 
 ### Effect of transmission type on mpg based on the *mtcars* dataset
