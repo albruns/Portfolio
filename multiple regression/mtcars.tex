@@ -7,6 +7,8 @@
 \author{Alexander Bruns}
 \title{Multiple Regression on the mtcars dataset}
 \begin{document}
+	\part{Multiple Regression on the mtcars dataset}
+	\textit{Alexander Bruns}
 	\section{Summary}
 	This study reviews the effect of 10 parameters on the gas mileage of 32 cars. The impact of each factor was investigated and modeled. 
 	It was found that the transmission type has no significant effect on the gas mileage. There are gasoline saving autmomatic automobiles availible as well as gasoline saving manual automobile.
@@ -19,7 +21,7 @@
 	
 	\subsection{Exploratory Data Analysis}
 	
-	The exploratory data analysis (Appendix A) showed a strong correlation between mpg and weight, displacement and cylinders (R > 0.8). Displacement and cylinders are confounded as usually the displacement increases with cylinder number. Both are correlated with R > 0.9. The correlation between \textit{mpg} and transmission type \textit{am} is about 0.6 which indicates that mpg depends on various factors and not only the transmission type. 
+	The exploratory data analysis (Appendix A) showed a strong correlation between mpg and weight, displacement and cylinders (R $>$ 0.8). Displacement and cylinders are confounded as usually the displacement increases with cylinder number. Both are correlated with R $>$ 0.9. The correlation between \textit{mpg} and transmission type \textit{am} is about 0.6 which indicates that mpg depends on various factors and not only the transmission type. 
 	
 	Graph 1 reveals the relation between Weight, Transmission type and Miles per Gallon
 	
@@ -32,7 +34,7 @@
 	
 \subsection{Model Selection}
 
-This section describes the selection of the best model for the question to how extent affects the transmission type the *mpg*. As shown in the previous section, only the variables with the highest correlation coefficient were taken into account. The selection of the best model is done by means of a likelihood-ratio-test.
+This section describes the selection of the best model for the question to how extent affects the transmission type the \textit{mpg}. As shown in the previous section, only the variables with the highest correlation coefficient were taken into account. The selection of the best model is done by means of a likelihood-ratio-test.
 
 \begin{verbatim}
 Analysis of Variance Table
@@ -90,7 +92,7 @@ However, two car models - the Toyota Corolla and the Fiat 128 - show greater res
 
 \section{Inspection for relationship between dependent and independent variables}
 
-The dependent variable is *mpg* while the independent variables are weight \textit{wt}, transmission type \textit{am}, cylinder displacement \textit{disp} and horsepower \textit{hp}. 
+The dependent variable is \textit{mpg} while the independent variables are weight \textit{wt}, transmission type \textit{am}, cylinder displacement \textit{disp} and horsepower \textit{hp}. 
 
 Firstly, the correlations between all variables are investigated.
 
@@ -133,7 +135,7 @@ The residuals for the model were examined. The following four methods were utili
 
 \begin{figure}
 \centering
-\includegraphics[width=1.0\linewidth]{residuals}
+\includegraphics[width=1.2\linewidth]{residuals}
 \caption[Residuals]{Residuals}
 \end{figure}
 
