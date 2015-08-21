@@ -1,0 +1,135 @@
+---
+title: "Practical Machine Learning - Course Assignment"
+author: "Alexander Bruns"
+date: "14. August 2015"
+output: html_document
+---
+
+## Introduction
+
+This analysis aims to determine the best model for the provided WLE dataset from http://groupware.les.inf.puc-rio.br/har.
+
+#### Requiered Packages
+
+* **caret**
+* **ggplot2**
+* **e1071**
+* **randomForest**
+
+```{r echo=F,message=F}
+library(ggplot2)
+library(caret)
+library(e1071)
+library(randomForest)
+library(randomForest)
+```
+
+
+### Data Cleaning
+
+The training dataset is loaded from the WLE dataset from http://groupware.les.inf.puc-rio.br/har archive into R.
+```{r echo=F, cache=T}
+training<-read.csv("pml-training.csv", header=TRUE,stringsAsFactors = F,na.strings=c("NA","","#DIV/0!"))
+```
+Then several datacleaning and EDA steps were performed.  Data cleaning included the following steps:
+
+* Identifying N/A values
+    * Blanks, NA and #DIV/0 were marked as NAs
+* Deleting columns which only contained NAs by using *colSums*
+* Deleting columns with time information
+* Separating the outcome
+
+```{r echo=F, cache=T}
+training<-training[,colSums(is.na(training))==0]
+outcome<-factor(training[,"classe"])
+training<-training[,c(-1,-2,-3,-4,-5,-6,-7,-60)]
+```
+
+Deleted columns were standard deviations from the measurements and bookkeeping values, therefore **non** independent.
+### Data Processing
+
+After tidying up the data, assuring that all predictor variables are *numeric* and the outcome is a *factor* variable the data was further processed to reduce the dimensions of the data set. Firstly, **caret's** *nearZeroVar()* was applied in order to identfy columns with zero or near zero variance. However, all columns have variance above zero.
+```{r cache=T}
+nzi<-nearZeroVar(training)
+nzi
+```
+
+Then colinear colmumns were identified and deleted using **caret´s** *findCorrealtion()* function. 
+
+```{r cache=T}
+descrCorr <- cor(training)
+highCorr <- findCorrelation(descrCorr, 0.90)
+deleted_cols<-names(training[,highCorr])
+training <- training[,-highCorr]
+deleted_cols
+```
+
+The last pre-Processing step is the centering of the data:
+
+```{r echo=F, cache=T}
+center_colmeans <- function(x) {
+    xcenter = colMeans(x)
+    x - rep(xcenter, rep.int(nrow(x), ncol(x)))
+}   
+training_center<-center_colmeans(training) 
+training<-cbind(outcome,training_center)
+```
+
+### Model Building
+
+Two models were compared in respect to their accuracy and computing time. 
+
+* Multinomial General Regression (multinom)
+* CART Trees (randomForest)
+
+Before training the "training" data set was partitioned to 40% training and 60 testing. The model was then evaluated on the provided "test" dataset.
+All models were cross-validated (n=3) to compare their accuracy.
+
+#### Multinomial Regression
+
+```{r echo=T, cache=T, message=F,tidy=T,warning=F,results="hide"}
+ctrl<-trainControl(method="cv",number=3,allowParallel=F)
+set.seed(123)
+multitrain<-createDataPartition(training$outcome,p = 0.4, list = FALSE)
+
+fullGLMmod<-train(outcome~.,data=training[multitrain,],method="multinom",trControl=ctrl)
+```
+
+Multinomial regression determines the probability of a certain outcome for a factor variable. However accuracy was quiet low with `r max(fullGLMmod$resample[,1])`
+
+Out-of-sample accuracy: 61.3%
+```{r echo=T, cache=T}
+confusionMatrix(predict(fullGLMmod,newdata=training[-multitrain,2:46]),training[-multitrain,1])
+```
+
+
+#### RandomForest Classification
+
+The random Forest classification was done using the **randomForest** package. 
+Number of trees was set to ntree=3 and proxmity and importances were calculated in order to assess the effect of each classifier.
+
+```{r echo=T, cache=T}
+RFtraining<-createDataPartition(training$outcome,p = 0.4, list = FALSE)
+RF<-randomForest(outcome~.,data=training[RFtraining,],replace=T,importance=T,proximity=T,scale=F,ntree=250)
+```
+
+Out-of-sample accuracy: 98.7%
+```{r echo=T, cache=T}
+confusionMatrix(predict(RF,newdata=training[-RFtraining,2:46]),training[-RFtraining,1])
+```
+
+In the direct comparison the RF does a way better job to classify the outcome than the multinomial regression. Now let´s examine the impact of each classifier:
+
+```{r echo=T, cache=T}
+varImpPlot(RF)
+```
+
+The classifiers *yaw_belt*, *magnet_dumbbell_y* and *pitch_belt* are the tree most important variables. The following graphic shows the separation of the outcome by the variables *yaw_belt* and *magnet_dumbbell_y*
+
+```{r echo=T, cache=T}
+qplot(yaw_belt,magnet_dumbbell_z,data=training,color=outcome)
+```
+
+### Bibliography
+
+Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. **Qualitative Activity Recognition of Weight Lifting Exercises.** Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013. 
