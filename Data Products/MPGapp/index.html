@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MPG Estimation</title>
+  <meta charset="utf-8">
+  <meta name="description" content="MPG Estimation">
+  <meta name="author" content="Alexander Bruns">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>MPG Estimation</h1>
+    <h2>Shiny App</h2>
+    <p>Alexander Bruns<br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h1>Introduction</h1>
+  </hgroup>
+  <article data-timings="">
+    <h3>What&#39;s the story?</h3>
+
+<p>Build a web app which predicts the miles per gallon for a given set of car attributes. 
+The prediction was already built in the <strong>linear regression</strong> class. 
+Therefore this job adds the graphical interface to the function.</p>
+
+<h3>Requierements</h3>
+
+<ul>
+<li>Interactive prediction of MPG using the mtcars dataset</li>
+<li>Plotting of results in <em>ggplot</em></li>
+<li>Comparison to other cars</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <hgroup>
+    <h1>Implementation</h1>
+  </hgroup>
+  <article data-timings="">
+    <h3>server.R</h3>
+
+<p>1 Fit the model</p>
+
+<pre><code class="r">mtcars&lt;-mtcars[,c(&quot;mpg&quot;,&quot;wt&quot;,&quot;cyl&quot;,&quot;hp&quot;)]
+mtcars$cyl&lt;-factor(mtcars$cyl)
+fit&lt;-lm(mpg~wt+cyl+hp,data=mtcars)
+</code></pre>
+
+<p>2 Predict with the data</p>
+
+<pre><code class="r"># The shiny part
+shinyServer(function(input, output) {
+
+output$text1 &lt;- renderText({
+mpg_pred&lt;-predict(fit,newdata=data.frame(wt=input$weight,cyl=input$cylinders,hp=input$horse),
+response=&quot;prediction&quot;)
+mpg_pred
+                              })
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h1>Implementation</h1>
+  </hgroup>
+  <article data-timings="">
+    <h3>server.R</h3>
+
+<p>3 Generate the plot</p>
+
+<pre><code class="r">output$graph1&lt;-renderPlot({
+mpg_pred&lt;-predict(fit,newdata=data.frame(wt=input$weight,cyl=input$cylinders,hp=input$horse),
+                          response=&quot;prediction&quot;)
+    ggplot(data=mtcars,aes(y=mpg,x=wt),color=cyl,geom=&quot;point&quot;)
+    +geom_point(aes(colour=cyl))
+    +geom_point(x=input$weight,y=mpg_pred,color=&quot;red&quot;,size=8,shape=4)
+    +theme_minimal()
+    +xlab(&quot;Weight lbs/1000&quot;)+ylab(&quot;MPG&quot;)+ggtitle(&quot;Compare your car&quot;)})
+</code></pre>
+
+<p>4 Compare to other cars</p>
+
+<pre><code class="r">    output$click_info &lt;- renderPrint({
+        nearPoints(mtcars[,], input$plot_click, addDist = FALSE)})
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h1>Implementation</h1>
+  </hgroup>
+  <article data-timings="">
+    <h3>ui.R</h3>
+
+<p>The ui.R had the following requierements:</p>
+
+<ul>
+<li>numeric input for horsepower and weight
+
+<ul>
+<li>numericInput()</li>
+</ul></li>
+<li>dropdown menu for cylinder number
+
+<ul>
+<li>selectInput</li>
+</ul></li>
+<li>click info for the ggplot plot
+
+<ul>
+<li>plotOutput(click=&quot;var&quot;)</li>
+</ul></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-5" style="background:;">
+  <hgroup>
+    <h1>The app in action</h1>
+  </hgroup>
+  <article data-timings="">
+    <h3>Shiny App</h3>
+
+<p><a href="https://albruns.shinyapps.io/MPGapp">https://albruns.shinyapps.io/MPGapp</a></p>
+
+<h3>Github Repo</h3>
+
+<p><a href="https://github.com/albruns/Portfolio/tree/master/Data%20Products">https://github.com/albruns/Portfolio/tree/master/Data%20Products</a></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Introduction'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Implementation'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Implementation'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Implementation'>
+         4
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=5 title='The app in action'>
+         5
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>
